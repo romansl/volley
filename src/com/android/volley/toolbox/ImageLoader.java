@@ -23,6 +23,7 @@ import android.widget.ImageView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
@@ -217,13 +218,12 @@ public class ImageLoader {
         // The request is not already in flight. Send the new request to the network and
         // track it.
         Request<?> newRequest =
-            new ImageRequest(requestUrl, new Listener<Bitmap>() {
+            createRequest(requestUrl, new Listener<Bitmap>() {
                 @Override
                 public void onResponse(Bitmap response) {
                     onGetImageSuccess(cacheKey, response);
                 }
-            }, maxWidth, maxHeight,
-            Config.RGB_565, new ErrorListener() {
+            }, maxWidth, maxHeight, new ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     onGetImageError(cacheKey, error);
@@ -234,6 +234,11 @@ public class ImageLoader {
         mInFlightRequests.put(cacheKey,
                 new BatchedImageRequest(newRequest, imageContainer));
         return imageContainer;
+    }
+
+    protected ImageRequest createRequest(String requestUrl, Listener<Bitmap> listener,
+                                       int maxWidth, int maxHeight, ErrorListener errorListener) {
+        return new ImageRequest(requestUrl, listener, maxWidth, maxHeight, Config.RGB_565, errorListener);
     }
 
     /**
